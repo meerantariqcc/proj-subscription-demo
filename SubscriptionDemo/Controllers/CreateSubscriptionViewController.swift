@@ -338,9 +338,7 @@ extension CreateSubscriptionViewController: CategoryPickerViewControllerDelegate
 /*
  Plan
  
- - Fix UI
  - Additional functionalities
- - Code refactor
  - Docs
  - App Icon
  - Splash
