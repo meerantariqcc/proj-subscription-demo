@@ -1,6 +1,12 @@
 import UIKit
 
+protocol CreateSubscriptionViewControllerDelegate: AnyObject {
+    func createSubscriptionViewController(_ controller: CreateSubscriptionViewController, didSaveSubscription subscription: Subscription)
+}
+
 class CreateSubscriptionViewController: UIViewController {
+
+    weak var delegate: CreateSubscriptionViewControllerDelegate?
 
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
     private var selectedService: Service? // New property to store the selected service
@@ -8,6 +14,10 @@ class CreateSubscriptionViewController: UIViewController {
     private let titleLabel = UILabel()
     private let amountLabel = UILabel()
     private let serviceLogoImageView = UIImageView()
+    private var selectedStartDate: Date = Date() // Store selected start date
+    private var selectedFrequency: String = "Weekly" // Store selected frequency
+    private var selectedCategory: Category = Category(name: "Subscription", imageName: "") // Store selected category
+    private var isActive: Bool = true // Store active status
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -119,7 +129,24 @@ class CreateSubscriptionViewController: UIViewController {
 
     /// Handles the tap event on the save button in the navigation bar.
     @objc private func saveButtonTapped() {
-        // Handle save action
+        guard let serviceName = selectedService?.name, let amount = selectedService?.amount else {
+            // Handle error: service not selected or amount not set
+            return
+        }
+
+        let newSubscription = Subscription(
+            serviceName: serviceName,
+            amount: amount,
+            category: selectedCategory.name,
+            startDate: selectedStartDate,
+            frequency: selectedFrequency,
+            isActive: isActive
+        )
+
+        delegate?.createSubscriptionViewController(self, didSaveSubscription: newSubscription)
+        dismiss(animated: true) { [weak self] in
+            self?.resetFields()
+        }
     }
 
     /// Handles the tap event on the plus circle button in the "Choose a service" section.
@@ -141,6 +168,20 @@ class CreateSubscriptionViewController: UIViewController {
             sheet.widthFollowsPreferredContentSizeWhenEdgeAttached = true
         }
         present(navigationController, animated: true, completion: nil)
+    }
+
+    private func resetFields() {
+        selectedService = nil
+        titleLabel.text = "Choose a service"
+        titleLabel.textColor = .systemGray
+        amountLabel.text = "$0"
+        serviceLogoImageView.isHidden = true
+        plusCircleButton.isHidden = false
+        selectedStartDate = Date()
+        selectedFrequency = "Weekly"
+        selectedCategory = Category(name: "Subscription", imageName: "")
+        isActive = true
+        tableView.reloadData()
     }
 }
 
@@ -181,7 +222,7 @@ extension CreateSubscriptionViewController: UITableViewDelegate, UITableViewData
                 textField.translatesAutoresizingMaskIntoConstraints = false
                 textField.isUserInteractionEnabled = false // Make the text field uneditable
                 if let amount = selectedService?.amount {
-                    textField.text = String(format: "%.2f", amount) // Set the amount from selectedService
+                    textField.text = String(format: "%.2f", amount)
                 }
                 cell.contentView.addSubview(textField)
                 NSLayoutConstraint.activate([
@@ -191,7 +232,7 @@ extension CreateSubscriptionViewController: UITableViewDelegate, UITableViewData
                 ])
             case 2:
                 cell.textLabel?.text = "Category"
-                cell.detailTextLabel?.text = "Subscription"
+                cell.detailTextLabel?.text = selectedCategory.name
                 cell.accessoryType = .disclosureIndicator
             default:
                 break
@@ -200,18 +241,22 @@ extension CreateSubscriptionViewController: UITableViewDelegate, UITableViewData
             switch indexPath.row {
             case 0:
                 cell.textLabel?.text = "Start Date"
-                cell.detailTextLabel?.text = "Apr 12, 2025"
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateStyle = .medium
+                dateFormatter.timeStyle = .none
+                cell.detailTextLabel?.text = dateFormatter.string(from: selectedStartDate)
                 cell.accessoryType = .disclosureIndicator
             case 1:
                 cell.textLabel?.text = "Frequency"
-                cell.detailTextLabel?.text = "Weekly"
+                cell.detailTextLabel?.text = selectedFrequency
                 cell.accessoryType = .disclosureIndicator
             case 2:
                 cell.textLabel?.text = "Active"
                 let activeSwitch = UISwitch()
                 activeSwitch.translatesAutoresizingMaskIntoConstraints = false
-                activeSwitch.isOn = true
+                activeSwitch.isOn = isActive
                 activeSwitch.onTintColor = UIColor(named: "AccentColor")
+                activeSwitch.addTarget(self, action: #selector(activeSwitchChanged(_:)), for: .valueChanged)
                 cell.contentView.addSubview(activeSwitch)
                 NSLayoutConstraint.activate([
                     activeSwitch.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -20),
@@ -223,6 +268,10 @@ extension CreateSubscriptionViewController: UITableViewDelegate, UITableViewData
         }
 
         return cell
+    }
+
+    @objc private func activeSwitchChanged(_ sender: UISwitch) {
+        isActive = sender.isOn
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -305,32 +354,22 @@ extension CreateSubscriptionViewController: ServiceListViewControllerDelegate {
 
 extension CreateSubscriptionViewController: DatePickerViewControllerDelegate {
     func datePickerViewController(_ controller: DatePickerViewController, didSelect date: Date) {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .medium
-        dateFormatter.timeStyle = .none
-        // Find the cell and update its detailTextLabel
-        let indexPath = IndexPath(row: 0, section: 1) // Start Date is at section 1, row 0
-        if let cell = tableView.cellForRow(at: indexPath) {
-            cell.detailTextLabel?.text = dateFormatter.string(from: date)
-        }
+        selectedStartDate = date
+        tableView.reloadRows(at: [IndexPath(row: 0, section: 1)], with: .automatic)
     }
 }
 
 extension CreateSubscriptionViewController: FrequencyPickerViewControllerDelegate {
     func frequencyPickerViewController(_ controller: FrequencyPickerViewController, didSelect frequency: String) {
-        let indexPath = IndexPath(row: 1, section: 1) // Frequency is at section 1, row 1
-        if let cell = tableView.cellForRow(at: indexPath) {
-            cell.detailTextLabel?.text = frequency
-        }
+        selectedFrequency = frequency
+        tableView.reloadRows(at: [IndexPath(row: 1, section: 1)], with: .automatic)
     }
 }
 
 extension CreateSubscriptionViewController: CategoryPickerViewControllerDelegate {
     func categoryPickerViewController(_ controller: CategoryPickerViewController, didSelect category: Category) {
-        let indexPath = IndexPath(row: 2, section: 0) // Category is at section 0, row 2
-        if let cell = tableView.cellForRow(at: indexPath) {
-            cell.detailTextLabel?.text = category.name
-        }
+        selectedCategory = category
+        tableView.reloadRows(at: [IndexPath(row: 2, section: 0)], with: .automatic)
     }
 }
 
@@ -340,7 +379,5 @@ extension CreateSubscriptionViewController: CategoryPickerViewControllerDelegate
  
  - Additional functionalities
  - Docs
- - App Icon
- - Splash
  */
 
