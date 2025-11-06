@@ -92,9 +92,6 @@ class CreateSubscriptionViewController: UIViewController {
             amountLabel.leadingAnchor.constraint(equalTo: plusCircleButton.trailingAnchor, constant: 15),
             amountLabel.topAnchor.constraint(equalTo: chooseServiceView.centerYAnchor, constant: 0),
         ])
-
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(chooseServiceViewTapped))
-        chooseServiceView.addGestureRecognizer(tapGesture)
     }
 
     /// Sets up the table view for input fields and other subscription details.
@@ -173,16 +170,8 @@ extension CreateSubscriptionViewController: UITableViewDelegate, UITableViewData
             switch indexPath.row {
             case 0:
                 cell.textLabel?.text = "Name"
-                let textField = UITextField()
-                textField.placeholder = "Choose a service"
-                textField.textAlignment = .right
-                textField.translatesAutoresizingMaskIntoConstraints = false
-                cell.contentView.addSubview(textField)
-                NSLayoutConstraint.activate([
-                    textField.leadingAnchor.constraint(equalTo: cell.textLabel!.trailingAnchor, constant: 10),
-                    textField.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -20),
-                    textField.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor)
-                ])
+                cell.detailTextLabel?.text = selectedService?.name ?? "Choose a service"
+                cell.accessoryType = .disclosureIndicator
             case 1:
                 cell.textLabel?.text = "Amount"
                 let textField = UITextField()
@@ -190,6 +179,10 @@ extension CreateSubscriptionViewController: UITableViewDelegate, UITableViewData
                 textField.textAlignment = .right
                 textField.keyboardType = .decimalPad
                 textField.translatesAutoresizingMaskIntoConstraints = false
+                textField.isUserInteractionEnabled = false // Make the text field uneditable
+                if let amount = selectedService?.amount {
+                    textField.text = String(format: "%.2f", amount) // Set the amount from selectedService
+                }
                 cell.contentView.addSubview(textField)
                 NSLayoutConstraint.activate([
                     textField.leadingAnchor.constraint(equalTo: cell.textLabel!.trailingAnchor, constant: 10),
@@ -235,7 +228,19 @@ extension CreateSubscriptionViewController: UITableViewDelegate, UITableViewData
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
 
-        if indexPath.section == 1 && indexPath.row == 0 { // Start Date cell
+        if indexPath.section == 0 && indexPath.row == 0 { // Name cell
+            let serviceListVC = ServiceListViewController()
+            serviceListVC.delegate = self
+            serviceListVC.selectedService = selectedService // Pass the currently selected service
+            let navigationController = UINavigationController(rootViewController: serviceListVC)
+            if let sheet = navigationController.sheetPresentationController {
+                sheet.detents = [.medium(), .large()]
+                sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+                sheet.prefersEdgeAttachedInCompactHeight = true
+                sheet.widthFollowsPreferredContentSizeWhenEdgeAttached = true
+            }
+            present(navigationController, animated: true, completion: nil)
+        } else if indexPath.section == 1 && indexPath.row == 0 { // Start Date cell
             let datePickerVC = DatePickerViewController()
             datePickerVC.delegate = self
             let navigationController = UINavigationController(rootViewController: datePickerVC)
@@ -294,6 +299,7 @@ extension CreateSubscriptionViewController: ServiceListViewControllerDelegate {
             serviceAmountLabel.text = "$\(String(format: "%.2f", service.amount))"
         }
         self.selectedService = service // Store the selected service
+        tableView.reloadRows(at: [IndexPath(row: 0, section: 0), IndexPath(row: 1, section: 0)], with: .automatic) // Reload Name and Amount rows
     }
 }
 
