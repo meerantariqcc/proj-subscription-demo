@@ -25,14 +25,17 @@ class ServiceListViewController: UIViewController {
     private let tableView = UITableView()
 
     private var services: [Service] = [
-        Service(name: "Netflix", imageName: "netflix_icon", amount: 15.99),
-        Service(name: "Hulu", imageName: "hulu_icon", amount: 12.99),
-        Service(name: "Spotify", imageName: "spotify_icon", amount: 9.99),
-        Service(name: "PlayStation+", imageName: "playstation_icon", amount: 9.99),
-        Service(name: "Paramount+", imageName: "paramount_icon", amount: 5.99),
-        Service(name: "YouTube Music", imageName: "youtube_music_icon", amount: 9.99)
+        Service(name: "Netflix", imageName: "Netflix", amount: 15.99),
+        Service(name: "Hulu", imageName: "Hulu", amount: 12.99),
+        Service(name: "Spotify", imageName: "Spotify", amount: 9.99),
+        Service(name: "PlayStation+", imageName: "Playstation", amount: 9.99),
+        Service(name: "Paramount+", imageName: "Paramount", amount: 5.99),
+        Service(name: "YouTube Music", imageName: "Youtube", amount: 9.99),
+        Service(name: "Disney", imageName: "Disney", amount: 13.99)
     ]
     private var filteredServices: [Service] = []
+
+    var selectedService: Service? // New property to hold the selected service
 
     // MARK: - Lifecycle
 
@@ -88,6 +91,9 @@ class ServiceListViewController: UIViewController {
 
     /// Handles the tap event on the "Done" button in the navigation bar.
     @objc private func doneButtonTapped() {
+        if let service = selectedService {
+            delegate?.serviceListViewController(self, didSelect: service)
+        }
         dismiss(animated: true, completion: nil)
     }
 }
@@ -105,15 +111,22 @@ extension ServiceListViewController: UITableViewDelegate, UITableViewDataSource 
         let cell = tableView.dequeueReusableCell(withIdentifier: "ServiceCell", for: indexPath) as! ServiceCell
         let service = filteredServices[indexPath.row]
         cell.configure(with: service)
+        cell.accessoryType = (service == selectedService) ? .checkmark : .none // Set checkmark if service is selected
         return cell
     }
 
     /// Handles the selection of a service in the table view.
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let selectedService = filteredServices[indexPath.row]
-        delegate?.serviceListViewController(self, didSelect: selectedService)
-        dismiss(animated: true, completion: nil)
+        let service = filteredServices[indexPath.row]
+        
+        if selectedService == service {
+            // Deselect if the same service is tapped again
+            selectedService = nil
+        } else {
+            selectedService = service
+        }
+        tableView.reloadData() // Reload data to show/hide checkmarks
     }
 }
 

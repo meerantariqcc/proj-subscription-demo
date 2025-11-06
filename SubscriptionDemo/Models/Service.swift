@@ -7,8 +7,7 @@
 
 import Foundation
 
-/// A struct representing a subscription service.
-struct Service {
+struct Service: Equatable, Codable {
     let name: String
     let imageName: String
     let amount: Double

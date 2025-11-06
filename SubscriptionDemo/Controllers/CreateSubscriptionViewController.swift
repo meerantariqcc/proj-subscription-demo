@@ -3,6 +3,7 @@ import UIKit
 class CreateSubscriptionViewController: UIViewController {
 
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
+    private var selectedService: Service? // New property to store the selected service
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -122,6 +123,7 @@ class CreateSubscriptionViewController: UIViewController {
     @objc private func chooseServiceViewTapped() {
         let serviceListVC = ServiceListViewController()
         serviceListVC.delegate = self
+        serviceListVC.selectedService = selectedService // Pass the currently selected service
         let navigationController = UINavigationController(rootViewController: serviceListVC)
         if let sheet = navigationController.sheetPresentationController {
             sheet.detents = [.medium(), .large()]
@@ -275,6 +277,7 @@ extension CreateSubscriptionViewController: ServiceListViewControllerDelegate {
             serviceNameLabel.text = service.name
             serviceAmountLabel.text = "$\(String(format: "%.2f", service.amount))"
         }
+        self.selectedService = service // Store the selected service
     }
 }
 
@@ -311,11 +314,8 @@ extension CreateSubscriptionViewController: CategoryPickerViewControllerDelegate
 
 
 /*
- 
  Plan
  
- - Service model
- - Service list icons
  - Fix UI
  - Additional functionalities
  - Code refactor
