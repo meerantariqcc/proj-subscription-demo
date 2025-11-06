@@ -314,12 +314,10 @@ extension CreateSubscriptionViewController: CategoryPickerViewControllerDelegate
  
  Plan
  
- - Common components
  - Service model
  - Service list icons
  - Fix UI
  - Additional functionalities
- - Directory structure
  - Code refactor
  - Docs
  

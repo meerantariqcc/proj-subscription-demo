@@ -14,7 +14,7 @@
 		9A3B5F152EBD3FA400A15A6F /* Exceptions for "SubscriptionDemo" folder in "SubscriptionDemo" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				Resources/Info.plist,
 			);
 			target = 9A3B5F022EBD3FA300A15A6F /* SubscriptionDemo */;
 		};
@@ -147,7 +147,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2RT3S57AG6;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SubscriptionDemo/Info.plist;
+				INFOPLIST_FILE = SubscriptionDemo/Resources/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -175,7 +175,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2RT3S57AG6;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SubscriptionDemo/Info.plist;
+				INFOPLIST_FILE = SubscriptionDemo/Resources/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
