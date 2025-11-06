@@ -4,6 +4,10 @@ class CreateSubscriptionViewController: UIViewController {
 
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
     private var selectedService: Service? // New property to store the selected service
+    private let plusCircleButton = UIButton(type: .system)
+    private let titleLabel = UILabel()
+    private let amountLabel = UILabel()
+    private let serviceLogoImageView = UIImageView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,29 +41,32 @@ class CreateSubscriptionViewController: UIViewController {
         chooseServiceView.layer.cornerRadius = 10
         view.addSubview(chooseServiceView)
 
-        let plusCircleButton = UIButton(type: .system)
         plusCircleButton.translatesAutoresizingMaskIntoConstraints = false
         plusCircleButton.setImage(UIImage(systemName: "plus.circle.fill"), for: .normal)
-        plusCircleButton.tintColor = .systemBlue
+        plusCircleButton.tintColor = UIColor(named: "AccentColor")
         plusCircleButton.contentVerticalAlignment = .fill
         plusCircleButton.contentHorizontalAlignment = .fill
         plusCircleButton.imageView?.contentMode = .scaleAspectFit
         plusCircleButton.addTarget(self, action: #selector(plusButtonTapped), for: .touchUpInside)
+        plusCircleButton.isUserInteractionEnabled = false
         chooseServiceView.addSubview(plusCircleButton)
 
-        let titleLabel = UILabel()
+        serviceLogoImageView.translatesAutoresizingMaskIntoConstraints = false
+        serviceLogoImageView.contentMode = .scaleAspectFit
+        serviceLogoImageView.isHidden = true // Initially hidden
+        chooseServiceView.addSubview(serviceLogoImageView)
+
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.text = "Choose a service"
         titleLabel.font = .preferredFont(forTextStyle: .body)
-        titleLabel.textColor = .placeholderText
+        titleLabel.textColor = .systemGray
         titleLabel.tag = 101 // Tag for service name
         chooseServiceView.addSubview(titleLabel)
 
-        let amountLabel = UILabel()
         amountLabel.translatesAutoresizingMaskIntoConstraints = false
         amountLabel.text = "$0"
         amountLabel.font = .preferredFont(forTextStyle: .subheadline)
-        amountLabel.textColor = .systemGray
+        amountLabel.textColor = .gray
         amountLabel.tag = 102 // Tag for service amount
         chooseServiceView.addSubview(amountLabel)
 
@@ -74,11 +81,16 @@ class CreateSubscriptionViewController: UIViewController {
             plusCircleButton.widthAnchor.constraint(equalToConstant: 40),
             plusCircleButton.heightAnchor.constraint(equalToConstant: 40),
 
+            serviceLogoImageView.leadingAnchor.constraint(equalTo: chooseServiceView.leadingAnchor, constant: 15),
+            serviceLogoImageView.centerYAnchor.constraint(equalTo: chooseServiceView.centerYAnchor),
+            serviceLogoImageView.widthAnchor.constraint(equalToConstant: 40),
+            serviceLogoImageView.heightAnchor.constraint(equalToConstant: 40),
+
             titleLabel.leadingAnchor.constraint(equalTo: plusCircleButton.trailingAnchor, constant: 15),
-            titleLabel.bottomAnchor.constraint(equalTo: chooseServiceView.centerYAnchor, constant: -2),
+            titleLabel.bottomAnchor.constraint(equalTo: chooseServiceView.centerYAnchor, constant: 0),
 
             amountLabel.leadingAnchor.constraint(equalTo: plusCircleButton.trailingAnchor, constant: 15),
-            amountLabel.topAnchor.constraint(equalTo: chooseServiceView.centerYAnchor, constant: 2),
+            amountLabel.topAnchor.constraint(equalTo: chooseServiceView.centerYAnchor, constant: 0),
         ])
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(chooseServiceViewTapped))
@@ -94,7 +106,7 @@ class CreateSubscriptionViewController: UIViewController {
         view.addSubview(tableView)
 
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 120),
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 100),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -206,6 +218,7 @@ extension CreateSubscriptionViewController: UITableViewDelegate, UITableViewData
                 let activeSwitch = UISwitch()
                 activeSwitch.translatesAutoresizingMaskIntoConstraints = false
                 activeSwitch.isOn = true
+                activeSwitch.onTintColor = UIColor(named: "AccentColor")
                 cell.contentView.addSubview(activeSwitch)
                 NSLayoutConstraint.activate([
                     activeSwitch.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -20),
@@ -272,9 +285,12 @@ extension CreateSubscriptionViewController: ServiceListViewControllerDelegate {
         // Update UI with selected service
         print("Selected service: \(service.name)")
         // You would typically update labels or other UI elements here
-        if let serviceNameLabel = (view.viewWithTag(101) as? UILabel), // Assuming tag 101 for service name
-           let serviceAmountLabel = (view.viewWithTag(102) as? UILabel) { // Assuming tag 102 for service amount
-            serviceNameLabel.text = service.name
+        titleLabel.text = service.name
+        titleLabel.textColor = .black
+        serviceLogoImageView.image = UIImage(named: service.imageName) // Set the image for the image view
+        serviceLogoImageView.isHidden = false // Show the image view
+        plusCircleButton.isHidden = true // Hide the plus button
+        if let serviceAmountLabel = (view.viewWithTag(102) as? UILabel) { // Assuming tag 102 for service amount
             serviceAmountLabel.text = "$\(String(format: "%.2f", service.amount))"
         }
         self.selectedService = service // Store the selected service
@@ -320,6 +336,7 @@ extension CreateSubscriptionViewController: CategoryPickerViewControllerDelegate
  - Additional functionalities
  - Code refactor
  - Docs
- 
+ - App Icon
+ - Splash
  */
 
