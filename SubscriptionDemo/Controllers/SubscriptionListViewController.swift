@@ -11,7 +11,12 @@ class SubscriptionListViewController: UIViewController {
     }
 
     let tableView = UITableView()
-    var subscriptions: [Subscription] = []
+    var subscriptions: [Subscription] = [] {
+        didSet {
+            updatePlaceholderVisibility()
+        }
+    }
+    let placeholderLabel = UILabel()
 
     func setupNavigationBar() {
         let plusButton = UIBarButtonItem(image: UIImage(systemName: "plus.circle.fill"), style: .plain, target: self, action: #selector(plusButtonTapped))
@@ -36,6 +41,28 @@ class SubscriptionListViewController: UIViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SubscriptionCell")
         tableView.dataSource = self
         tableView.delegate = self
+
+        setupPlaceholderLabel()
+        updatePlaceholderVisibility()
+    }
+
+    func setupPlaceholderLabel() {
+        placeholderLabel.text = "No Active Subscriptions"
+        placeholderLabel.textColor = .systemGray
+        placeholderLabel.textAlignment = .center
+        placeholderLabel.font = .preferredFont(forTextStyle: .title2)
+        placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(placeholderLabel)
+
+        NSLayoutConstraint.activate([
+            placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            placeholderLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+    }
+
+    func updatePlaceholderVisibility() {
+        placeholderLabel.isHidden = !subscriptions.isEmpty
+        tableView.isHidden = subscriptions.isEmpty
     }
 }
 
